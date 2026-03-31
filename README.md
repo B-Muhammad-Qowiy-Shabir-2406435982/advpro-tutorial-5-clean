@@ -1,6 +1,6 @@
 # advpro-tutorial-5
 
-Reflection
+Reflection Publisher-1
 
 1. Dalam teori Observer Pattern, Subscriber biasanya didefinisikan sebagai interface karena memungkinkan adanya berbagai jenis subscriber dengan perilaku yang berbeda-beda. Namun, pada kasus BambangShop ini, kebutuhan sistem masih sederhana, yaitu hanya menyimpan data subscriber berupa URL dan nama, serta menerima notifikasi tanpa variasi perilaku yang kompleks. Oleh karena itu, penggunaan struct saja sudah cukup untuk merepresentasikan subscriber.
 
@@ -31,3 +31,40 @@ Dengan menggunakan DashMap, kita mendapatkan:
 - Performa yang lebih baik dalam lingkungan concurrent
 
 Meskipun konsep Singleton sudah digunakan (melalui lazy_static), DashMap tetap diperlukan untuk memastikan bahwa akses data aman dalam kondisi multi-thread. Jadi, dalam kasus ini, Singleton dan DashMap saling melengkapi, bukan saling menggantikan.
+
+Reflection Publisher-2
+
+1. Dalam pola MVC klasik, Model menangani sekaligus penyimpanan data dan logika bisnis. Namun, hal ini melanggar prinsip Single Responsibility Principle (SRP) dari SOLID, di mana setiap komponen seharusnya hanya memiliki satu alasan untuk berubah.
+
+Dengan memisahkan keduanya:
+- Repository hanya bertanggung jawab untuk akses data (CRUD ke database/storage). Jika suatu saat kita ganti database dari PostgreSQL ke MongoDB, kita hanya perlu mengubah      Repository tanpa menyentuh logika bisnis.
+- Service hanya bertanggung jawab untuk logika bisnis, seperti validasi, transformasi data, dan orkestrasi antar-repository.
+
+Pemisahan ini membuat kode lebih mudah dipelihara, diuji (unit test), dan dikembangkan karena setiap lapisan memiliki tanggung jawab yang jelas dan tidak saling bergantung secara berlebihan.
+
+2. Jika kita hanya menggunakan Model tanpa Service dan Repository, maka setiap Model (Program, Subscriber, Notification) harus menangani semua logika sendiri.
+
+Interaksi antar model akan menjadi sangat kompleks:
+- Program perlu tahu cara menyimpan data sekaligus cara mengirim notifikasi
+  ke Subscriber secara langsung.
+- Subscriber perlu tahu cara mengambil data dirinya sendiri dari storage
+  sekaligus memvalidasi langganannya.
+- Notification perlu tahu cara membuat dirinya sendiri, menyimpan dirinya,
+  sekaligus tahu siapa saja Subscriber yang harus menerimanya.
+
+Akibatnya, terjadi tight coupling yang tinggi — setiap perubahan kecil di satu Model bisa merembet dan merusak Model lain. Kode menjadi sulit dibaca, sulit diuji, dan sangat rentan bug saat ada penambahan fitur baru.
+
+3. Ya, saya telah menggunakan Postman untuk menguji endpoint yang dibuat di tutorial ini. Postman sangat membantu karena memungkinkan kita mengirim HTTP request (GET, POST, dll.) tanpa perlu membuat frontend terlebih dahulu.
+
+Fitur-fitur Postman yang saya temukan berguna:
+- Collections: Menyimpan kumpulan request agar bisa dijalankan ulang kapan saja,
+  sangat berguna untuk menguji seluruh endpoint secara konsisten.
+- Environment Variables: Menyimpan variabel seperti base URL sehingga mudah
+  beralih antara environment development dan production.
+- Automated Tests: Bisa menulis script untuk memverifikasi response secara otomatis,
+  misalnya mengecek status code atau isi body response.
+- History: Menyimpan riwayat request yang pernah dikirim sehingga mudah
+  untuk mengulang pengujian sebelumnya.
+
+Untuk Group Project ke depannya, fitur Collections dan Environment Variables sangat relevan karena memudahkan seluruh anggota tim menggunakan konfigurasi
+pengujian yang sama tanpa perlu setup ulang dari awal.
