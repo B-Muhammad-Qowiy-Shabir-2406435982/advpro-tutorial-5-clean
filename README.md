@@ -68,3 +68,42 @@ Fitur-fitur Postman yang saya temukan berguna:
 
 Untuk Group Project ke depannya, fitur Collections dan Environment Variables sangat relevan karena memudahkan seluruh anggota tim menggunakan konfigurasi
 pengujian yang sama tanpa perlu setup ulang dari awal.
+
+Reflection Publisher-3
+
+1. Dalam tutorial ini, kita menggunakan variasi Push model. Hal ini terlihat dari
+cara NotificationService secara aktif memanggil method update() pada setiap
+Subscriber dan mendorong (push) data Notification langsung ke URL mereka setiap
+kali ada event (CREATED, DELETED, PROMOTION), tanpa Subscriber perlu meminta
+data terlebih dahulu.
+
+2. Jika kita menggunakan Pull model (kebalikan dari yang dipakai sekarang):
+
+Keuntungan:
+- Subscriber hanya mengambil data ketika mereka siap memprosesnya, sehingga
+  lebih terkontrol dan tidak terbebani notifikasi yang tidak perlu.
+- Publisher menjadi lebih sederhana karena hanya perlu menyediakan data,
+  tidak perlu tahu cara menghubungi setiap Subscriber.
+
+Kerugian:
+- Subscriber harus aktif melakukan polling secara berkala untuk mengecek
+  apakah ada update baru, yang bisa membuang resource jika tidak ada perubahan.
+- Notifikasi tidak real-time — ada jeda antara kejadian dan saat Subscriber
+  mengetahuinya, tergantung seberapa sering mereka polling.
+- Implementasi lebih kompleks di sisi Subscriber karena mereka perlu
+  mengelola jadwal polling sendiri.
+
+3. Jika kita tidak menggunakan multi-threading (menghapus thread::spawn), maka
+proses notifikasi ke setiap Subscriber akan berjalan secara sequential
+(satu per satu). Artinya:
+
+- Program harus menunggu notifikasi ke Subscriber pertama selesai dikirim
+  sebelum mengirim ke Subscriber berikutnya.
+- Jika ada Subscriber dengan URL yang lambat merespons atau bahkan tidak
+  merespons (timeout), seluruh proses akan terhenti dan membuat pengguna
+  menunggu sangat lama.
+- Performa aplikasi akan menurun drastis seiring bertambahnya jumlah Subscriber
+  karena waktu respons bertambah secara linear.
+- Dalam kasus ekstrem, satu Subscriber yang bermasalah bisa memblokir
+  keseluruhan sistem notifikasi dan bahkan endpoint HTTP yang sedang dipakai
+  pengguna saat itu.
